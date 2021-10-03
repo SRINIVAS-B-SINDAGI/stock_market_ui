@@ -12,7 +12,7 @@ import axios from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 interface ETF {
   filename: String;
@@ -26,7 +26,6 @@ const columns: readonly ETF[] = [
 ];
 
 export default function EtfsList() {
-  const [requestToken, setRequestToken] = React.useState<string | undefined>();
   const [etfsList, setEtfsList] = React.useState<any[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
   const history = useHistory();
@@ -35,7 +34,6 @@ export default function EtfsList() {
       try {
         const token = await getAccessTokenSilently();
         getEtfsList(token);
-        setRequestToken(token);
       } catch (error) {
         console.log(error);
       }
@@ -83,17 +81,18 @@ export default function EtfsList() {
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
                   >
-                    {column.filename}
+                    <b>{column.filename}</b>
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {etfsList.map((row: any) => {
+              {etfsList.map((row: any, index) => {
                 return (
                   <TableRow
+                    style={{ cursor: "pointer" }}
                     hover
-                    key={row.filename}
+                    key={index}
                     onClick={() => rowClickHandler(row)}
                   >
                     <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>

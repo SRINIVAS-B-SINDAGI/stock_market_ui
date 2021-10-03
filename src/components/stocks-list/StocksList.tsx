@@ -12,10 +12,10 @@ import axios from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
+import { useHistory } from "react-router-dom";
 
 interface Stock {
   filename: String;
-  // company_name: String;
   align?: "right";
   minWidth?: number;
 }
@@ -26,15 +26,14 @@ const columns: readonly Stock[] = [
 ];
 
 export default function StocksList() {
-  const [requestToken, setRequestToken] = React.useState<string | undefined>();
   const [stocksList, setStocksList] = React.useState<any[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
+  const history = useHistory();
   useEffect(() => {
     const setToken = async () => {
       try {
         const token = await getAccessTokenSilently();
         getStocksList(token);
-        setRequestToken(token);
       } catch (error) {
         console.log(error);
       }
@@ -59,6 +58,11 @@ export default function StocksList() {
         setStocksList(error);
       });
   };
+  const rowClickHandler = (row: any) => {
+    history.push({
+      pathname: `/detials/${row.nasdaq_symbol}.csv`,
+    });
+  };
   return (
     <React.Fragment>
       <h4>Stocks List</h4>
@@ -77,15 +81,20 @@ export default function StocksList() {
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
                   >
-                    {column.filename}
+                    <b>{column.filename}</b>
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {stocksList.map((row: any) => {
+              {stocksList.map((row: any, index) => {
                 return (
-                  <TableRow hover key={row.filename}>
+                  <TableRow
+                    style={{ cursor: "pointer" }}
+                    hover
+                    key={index}
+                    onClick={() => rowClickHandler(row)}
+                  >
                     <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>
                     <TableCell>{row.security_name}</TableCell>
                   </TableRow>
