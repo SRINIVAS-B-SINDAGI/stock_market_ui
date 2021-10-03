@@ -93,10 +93,11 @@ export default function Details(props: {
           close: [],
         };
         response.data.forEach((item: any) => {
-          temp.date.push(item.data.data.substring(0, 10));
-          temp.open.push(item.data.open);
-          temp.close.push(item.data.close);
+          temp.date.push(item.data.date.substring(0, 10));
+          temp.open.push(Math.round(item.data.open));
+          temp.close.push(Math.round(item.data.close));
         });
+        console.log(temp);
         setGraphData(temp);
       })
       .catch(function (error) {
@@ -187,8 +188,10 @@ export default function Details(props: {
                 label="Age"
                 onChange={handleChange}
               >
-                {sdValues.map((sd: string) => (
-                  <MenuItem value={sd}>{sd}</MenuItem>
+                {sdValues.map((sd: string, index) => (
+                  <MenuItem value={sd} key={index}>
+                    {sd}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
