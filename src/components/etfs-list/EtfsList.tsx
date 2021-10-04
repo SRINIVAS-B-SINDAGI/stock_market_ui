@@ -7,6 +7,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import React from "react";
@@ -29,6 +30,7 @@ export default function EtfsList() {
   const [etfsList, setEtfsList] = React.useState<any[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
   const history = useHistory();
+  const [loading, setLoadingData] = React.useState<string>("loading");
   useEffect(() => {
     const setToken = async () => {
       try {
@@ -53,6 +55,7 @@ export default function EtfsList() {
       })
       .then(function (response) {
         setEtfsList(response.data);
+        setLoadingData("loaded");
       })
       .catch(function (error) {
         setEtfsList(error);
@@ -66,44 +69,56 @@ export default function EtfsList() {
   return (
     <React.Fragment>
       <h4>Etfs List</h4>
-      <Paper
-        sx={{
-          width: "100%",
-        }}
-      >
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {columns.map((column, index) => (
-                  <TableCell
-                    key={index}
-                    align={column.align}
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    <b>{column.filename}</b>
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {etfsList.map((row: any, index) => {
-                return (
-                  <TableRow
-                    style={{ cursor: "pointer" }}
-                    hover
-                    key={index}
-                    onClick={() => rowClickHandler(row)}
-                  >
-                    <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>
-                    <TableCell>{row.security_name}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      {loading === "loading" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 100,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      ) : (
+        <Paper
+          sx={{
+            width: "100%",
+          }}
+        >
+          <TableContainer sx={{ maxHeight: 440 }}>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  {columns.map((column, index) => (
+                    <TableCell
+                      key={index}
+                      align={column.align}
+                      style={{ minWidth: column.minWidth }}
+                    >
+                      <b>{column.filename}</b>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {etfsList.map((row: any, index) => {
+                  return (
+                    <TableRow
+                      style={{ cursor: "pointer" }}
+                      hover
+                      key={index}
+                      onClick={() => rowClickHandler(row)}
+                    >
+                      <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>
+                      <TableCell>{row.security_name}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
     </React.Fragment>
   );
 }

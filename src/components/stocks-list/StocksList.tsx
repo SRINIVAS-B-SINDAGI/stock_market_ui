@@ -1,5 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -29,6 +30,7 @@ export default function StocksList() {
   const [stocksList, setStocksList] = React.useState<any[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
   const history = useHistory();
+  const [loading, setLoadingData] = React.useState<string>("loading");
   useEffect(() => {
     const setToken = async () => {
       try {
@@ -53,6 +55,7 @@ export default function StocksList() {
       })
       .then(function (response) {
         setStocksList(response.data);
+        setLoadingData("loaded");
       })
       .catch(function (error) {
         setStocksList(error);
@@ -67,44 +70,56 @@ export default function StocksList() {
   return (
     <React.Fragment>
       <h4>Stocks List</h4>
-      <Paper
-        sx={{
-          width: "100%",
-        }}
-      >
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {columns.map((column, index) => (
-                  <TableCell
-                    key={index}
-                    align={column.align}
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    <b>{column.filename}</b>
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {stocksList.map((row: any, index) => {
-                return (
-                  <TableRow
-                    style={{ cursor: "pointer" }}
-                    hover
-                    key={index}
-                    onClick={() => rowClickHandler(row)}
-                  >
-                    <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>
-                    <TableCell>{row.security_name}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      {loading === "loading" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 100,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      ) : (
+        <Paper
+          sx={{
+            width: "100%",
+          }}
+        >
+          <TableContainer sx={{ maxHeight: 440 }}>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  {columns.map((column, index) => (
+                    <TableCell
+                      key={index}
+                      align={column.align}
+                      style={{ minWidth: column.minWidth }}
+                    >
+                      <b>{column.filename}</b>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {stocksList.map((row: any, index) => {
+                  return (
+                    <TableRow
+                      style={{ cursor: "pointer" }}
+                      hover
+                      key={index}
+                      onClick={() => rowClickHandler(row)}
+                    >
+                      <TableCell>{`${row.nasdaq_symbol}.csv`}</TableCell>
+                      <TableCell>{row.security_name}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
     </React.Fragment>
   );
 }
