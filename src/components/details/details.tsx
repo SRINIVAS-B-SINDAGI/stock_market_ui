@@ -6,21 +6,28 @@ import { serverUrl } from "../../App";
 import ReactApexChart from "react-apexcharts";
 import { calculateDate } from "../../utils/utils";
 import { useHistory } from "react-router-dom";
+import {
+  ChartData,
+  StandardDeviationResponse,
+} from "../../interfaces/detailsInterface";
 
 export default function Details(props: {
-  match: { params: { filename: string; securityname: string } };
+  match: { params: { filename: string; type: string } };
 }) {
+  const fileName = props.match.params.filename;
+  const history = useHistory();
   const { user, getAccessTokenSilently } = useAuth0();
   const [requestToken, setRequestToken] = React.useState<string | undefined>();
   const [sdValue, setSdValue] = React.useState<string>("1M");
   const [loading, setLoadingData] = React.useState<string>("loading");
-  const [graphData, setGraphData] = React.useState({
+  const [graphData, setGraphData] = React.useState<ChartData>({
     date: [],
     open: [],
     close: [],
     volume: [],
   });
-  const history = useHistory();
+  const sdValues = ["1M", "1Y", "3Y", "5Y"];
+
   React.useEffect(() => {
     let end = new Date();
     let start = new Date();
@@ -30,7 +37,13 @@ export default function Details(props: {
     const setToken = async () => {
       try {
         const token = await getAccessTokenSilently();
-        getStandardDeviation(token, props.match.params.filename, start, end);
+        getStandardDeviation(
+          token,
+          fileName,
+          start,
+          end,
+          props.match.params.type
+        );
         setRequestToken(token);
       } catch (error) {
         console.log(error);
@@ -45,16 +58,18 @@ export default function Details(props: {
   const getStandardDeviation = (
     token: string | undefined,
     filename: string,
-    start: any,
-    end: any
+    start: Date,
+    end: Date,
+    type: string
   ) => {
     axios
       .post(
         `${serverUrl}/api/standard-deviation`,
         {
-          filename: filename,
+          filename,
           start: start.toISOString().substring(0, 10),
           end: end.toISOString().substring(0, 10),
+          type,
         },
         {
           headers: {
@@ -63,20 +78,19 @@ export default function Details(props: {
         }
       )
       .then(function (response: any) {
-        const temp: any = {
+        const createChartData: ChartData = {
           date: [],
           open: [],
           close: [],
           volume: [],
         };
-        response.data.forEach((item: any) => {
-          temp.date.push(item.data.date.substring(0, 10));
-          temp.open.push(Math.round(item.data.open));
-          temp.close.push(Math.round(item.data.close));
-          temp.volume.push(Math.round(item.data.volume));
+        response.data.forEach((item: StandardDeviationResponse) => {
+          createChartData.date.push(item.data.date.substring(0, 10));
+          createChartData.open.push(Math.round(parseInt(item.data.open)));
+          createChartData.close.push(Math.round(parseInt(item.data.close)));
+          createChartData.volume.push(Math.round(parseInt(item.data.volume)));
         });
-        console.debug(temp);
-        setGraphData(temp);
+        setGraphData(createChartData);
         setLoadingData("loaded");
       })
       .catch(function (error) {
@@ -84,16 +98,20 @@ export default function Details(props: {
       });
   };
 
-  console.log(loading);
-  const handleChange = (ds: any) => {
+  const handleChange = (standardDeviation: string) => {
     setLoadingData("loading");
-    setSdValue(ds);
-    const { end, start } = calculateDate(ds);
-    getStandardDeviation(requestToken, props.match.params.filename, start, end);
+    setSdValue(standardDeviation);
+    const { end, start } = calculateDate(standardDeviation);
+    getStandardDeviation(
+      requestToken,
+      fileName,
+      start,
+      end,
+      props.match.params.type
+    );
   };
-  const sdValues = ["1M", "1Y", "3Y", "5Y"];
 
-  const openLine: any = {
+  const openPriceConfig: any = {
     series: [
       {
         name: "open price",
@@ -128,7 +146,7 @@ export default function Details(props: {
     },
   };
 
-  const closeLine: any = {
+  const closePriceConfig: any = {
     series: [
       {
         name: "close price",
@@ -163,7 +181,7 @@ export default function Details(props: {
     },
   };
 
-  const BarState: any = {
+  const volumePriceConfig: any = {
     series: [
       {
         name: "Volume Movement",
@@ -191,7 +209,7 @@ export default function Details(props: {
       },
       grid: {
         row: {
-          colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+          colors: ["#f3f3f3", "transparent"],
           opacity: 0.5,
         },
       },
@@ -243,10 +261,10 @@ export default function Details(props: {
               </p>
               <hr />
               <div style={{ float: "right", padding: 12 }}>
-                {sdValues.map((sd: string, index) => (
+                {sdValues.map((sdValue: string) => (
                   <button
-                    onClick={(event) => handleChange(sd)}
-                    key={sd}
+                    onClick={() => handleChange(sdValue)}
+                    key={sdValue}
                     style={{
                       border: "none",
                       borderRadius: 4,
@@ -259,7 +277,7 @@ export default function Details(props: {
                       fontWeight: 600,
                     }}
                   >
-                    {sd}
+                    {sdValue}
                   </button>
                 ))}
               </div>
@@ -271,24 +289,24 @@ export default function Details(props: {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12} md={6} lg={6}>
                   <ReactApexChart
-                    options={openLine.options}
-                    series={openLine.series}
+                    options={openPriceConfig.options}
+                    series={openPriceConfig.series}
                     type="area"
                     height={350}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={6} lg={6}>
                   <ReactApexChart
-                    options={closeLine.options}
-                    series={closeLine.series}
+                    options={closePriceConfig.options}
+                    series={closePriceConfig.series}
                     type="area"
                     height={350}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={6} lg={6}>
                   <ReactApexChart
-                    options={BarState.options}
-                    series={BarState.series}
+                    options={volumePriceConfig.options}
+                    series={volumePriceConfig.series}
                     type="line"
                     height={350}
                   />

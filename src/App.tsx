@@ -15,7 +15,7 @@ function App() {
       <NavBar />
       {isAuthenticated ? (
         <Switch>
-          <Route path="/detials/:filename" exact component={Details} />
+          <Route path="/detials/:filename/:type" exact component={Details} />
           <Route path="/dashboard" exact component={Dashboard} />
           <Route path="/" render={() => <Redirect to="/dashboard" />} />
         </Switch>

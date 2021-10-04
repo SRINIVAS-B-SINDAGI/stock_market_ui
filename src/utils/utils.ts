@@ -1,4 +1,4 @@
-export const getDays = (duration: any) => {
+export const getDays = (duration: string) => {
   if (duration === "1M") {
     return 30;
   } else if (duration === "1Y") {
@@ -10,7 +10,7 @@ export const getDays = (duration: any) => {
   }
 };
 
-export const calculateDate = (value: any) => {
+export const calculateDate = (value: string) => {
   let end = new Date();
   let start = new Date();
 

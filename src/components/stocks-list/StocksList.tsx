@@ -14,12 +14,7 @@ import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
 import { useHistory } from "react-router-dom";
-
-interface Stock {
-  filename: String;
-  align?: "right";
-  minWidth?: number;
-}
+import { Stock, StockResponseData } from "../../interfaces/stocksListInterface";
 
 const columns: readonly Stock[] = [
   { filename: "File Name", minWidth: 170 },
@@ -27,7 +22,7 @@ const columns: readonly Stock[] = [
 ];
 
 export default function StocksList() {
-  const [stocksList, setStocksList] = React.useState<any[]>([]);
+  const [stocksList, setStocksList] = React.useState<StockResponseData[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
   const history = useHistory();
   const [loading, setLoadingData] = React.useState<string>("loading");
@@ -61,12 +56,13 @@ export default function StocksList() {
         setStocksList(error);
       });
   };
-  const rowClickHandler = (row: any) => {
+  const rowClickHandler = (row: StockResponseData) => {
     history.push({
-      pathname: `/detials/${row.nasdaq_symbol}.csv`,
+      pathname: `/detials/${row.nasdaq_symbol}.csv/stock`,
     });
     localStorage.setItem("company_name", JSON.stringify(row.security_name));
   };
+
   return (
     <React.Fragment>
       <h4>Stocks List</h4>
@@ -102,7 +98,7 @@ export default function StocksList() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {stocksList.map((row: any, index) => {
+                {stocksList.map((row: StockResponseData, index) => {
                   return (
                     <TableRow
                       style={{ cursor: "pointer" }}

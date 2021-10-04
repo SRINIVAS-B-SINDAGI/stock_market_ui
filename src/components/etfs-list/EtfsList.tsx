@@ -14,12 +14,7 @@ import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
 import { useHistory } from "react-router-dom";
-
-interface ETF {
-  filename: String;
-  align?: "right";
-  minWidth?: number;
-}
+import { ETF, EtfResponseData } from "../../interfaces/etfsListInterface";
 
 const columns: readonly ETF[] = [
   { filename: "File Name", minWidth: 170 },
@@ -27,7 +22,7 @@ const columns: readonly ETF[] = [
 ];
 
 export default function EtfsList() {
-  const [etfsList, setEtfsList] = React.useState<any[]>([]);
+  const [etfsList, setEtfsList] = React.useState<EtfResponseData[]>([]);
   const { user, getAccessTokenSilently } = useAuth0();
   const history = useHistory();
   const [loading, setLoadingData] = React.useState<string>("loading");
@@ -61,11 +56,13 @@ export default function EtfsList() {
         setEtfsList(error);
       });
   };
-  const rowClickHandler = (row: any) => {
+
+  const rowClickHandler = (row: EtfResponseData) => {
     history.push({
-      pathname: `/detials/${row.nasdaq_symbol}.csv`,
+      pathname: `/detials/${row.nasdaq_symbol}.csv/etf`,
     });
   };
+
   return (
     <React.Fragment>
       <h4>Etfs List</h4>
@@ -101,7 +98,7 @@ export default function EtfsList() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {etfsList.map((row: any, index) => {
+                {etfsList.map((row: EtfResponseData, index) => {
                   return (
                     <TableRow
                       style={{ cursor: "pointer" }}
