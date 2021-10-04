@@ -1,21 +1,13 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import {
-  Box,
-  Container,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-} from "@mui/material";
+import { Container, Grid } from "@mui/material";
 import axios from "axios";
 import React from "react";
 import { serverUrl } from "../../App";
 import ReactApexChart from "react-apexcharts";
+import { calculateDate } from "../../utils/utils";
 
 export default function Details(props: {
-  match: { params: { filename: string } };
+  match: { params: { filename: string; securityname: string } };
 }) {
   const { user, getAccessTokenSilently } = useAuth0();
   const [requestToken, setRequestToken] = React.useState<string | undefined>();
@@ -24,26 +16,8 @@ export default function Details(props: {
     date: [],
     open: [],
     close: [],
+    volume: [],
   });
-  const getDays = (duration: any) => {
-    if (duration === "1M") {
-      return 30;
-    } else if (duration === "1Y") {
-      return 365;
-    } else if (duration === "3Y") {
-      return 365 * 3;
-    } else if (duration === "5Y") {
-      return 365 * 5;
-    }
-  };
-  const calculateDate = (value: any) => {
-    let end = new Date();
-    let start = new Date();
-
-    start.setDate(end.getDate() - getDays(value)!);
-    end.setDate(end.getDate() + 1);
-    return { end, start };
-  };
 
   React.useEffect(() => {
     let end = new Date();
@@ -91,13 +65,15 @@ export default function Details(props: {
           date: [],
           open: [],
           close: [],
+          volume: [],
         };
         response.data.forEach((item: any) => {
           temp.date.push(item.data.date.substring(0, 10));
           temp.open.push(Math.round(item.data.open));
           temp.close.push(Math.round(item.data.close));
+          temp.volume.push(Math.round(item.data.volume));
         });
-        console.log(temp);
+        console.debug(temp);
         setGraphData(temp);
       })
       .catch(function (error) {
@@ -105,12 +81,12 @@ export default function Details(props: {
       });
   };
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setSdValue(event.target.value as string);
-    const { end, start } = calculateDate(event.target.value);
+  const handleChange = (ds: any) => {
+    console.log(ds);
+    setSdValue(ds);
+    const { end, start } = calculateDate(ds);
     getStandardDeviation(requestToken, props.match.params.filename, start, end);
   };
-
   const sdValues = ["1M", "1Y", "3Y", "5Y"];
 
   const openLine: any = {
@@ -129,7 +105,12 @@ export default function Details(props: {
         enabled: false,
       },
       stroke: {
+        width: 0.5,
         curve: "smooth",
+      },
+      title: {
+        text: "Open Price Data",
+        align: "center",
       },
       xaxis: {
         type: "datetime",
@@ -159,7 +140,12 @@ export default function Details(props: {
         enabled: false,
       },
       stroke: {
+        width: 0.5,
         curve: "smooth",
+      },
+      title: {
+        text: "Close Price Data",
+        align: "center",
       },
       xaxis: {
         type: "datetime",
@@ -172,54 +158,124 @@ export default function Details(props: {
       },
     },
   };
+
+  const BarState: any = {
+    series: [
+      {
+        name: "Volume Movement",
+        data: graphData.volume,
+      },
+    ],
+    options: {
+      chart: {
+        height: 350,
+        type: "line",
+        zoom: {
+          enabled: false,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        width: 0.5,
+        curve: "straight",
+      },
+      title: {
+        text: "Volumes Data",
+        align: "center",
+      },
+      grid: {
+        row: {
+          colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+          opacity: 0.5,
+        },
+      },
+      xaxis: {
+        type: "datetime",
+        categories: graphData.date,
+      },
+    },
+  };
+
   return (
     <React.Fragment>
       <Container fixed>
-        <Grid item xs={12} lg={12} md={12} xl={12}>
-          <p>Details</p>
-
-          <Box sx={{ minWidth: 120 }}>
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Age</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={sdValue}
-                label="Age"
-                onChange={handleChange}
-              >
-                {sdValues.map((sd: string, index) => (
-                  <MenuItem value={sd} key={index}>
-                    {sd}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </Grid>
+        <React.Fragment>
+          <div style={{ margin: 40 }}>
+            <button
+              style={{
+                border: "none",
+                borderRadius: 4,
+                height: 32,
+                width: 60,
+                cursor: "pointer",
+                backgroundColor: "#2E3B55",
+                color: "white",
+                fontWeight: 600,
+              }}
+            >
+              BACK
+            </button>
+            <p style={{ fontSize: 20 }}>
+              {JSON.parse(localStorage.getItem("company_name")!)}
+            </p>
+            <hr />
+            <div style={{ float: "right", padding: 12 }}>
+              {sdValues.map((sd: string, index) => (
+                <button
+                  onClick={(event) => handleChange(sd)}
+                  key={sd}
+                  style={{
+                    border: "none",
+                    borderRadius: 4,
+                    height: 32,
+                    width: 40,
+                    cursor: "pointer",
+                    backgroundColor: "#2E3B55",
+                    color: "white",
+                    marginLeft: 10,
+                    fontWeight: 600,
+                  }}
+                >
+                  {sd}
+                </button>
+              ))}
+            </div>
+            <div>
+              <p>
+                Selected Standard Deviation : <b>{sdValue}</b>
+              </p>
+            </div>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12} md={6} lg={6}>
+                <ReactApexChart
+                  options={openLine.options}
+                  series={openLine.series}
+                  type="area"
+                  height={350}
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} md={6} lg={6}>
+                <ReactApexChart
+                  options={closeLine.options}
+                  series={closeLine.series}
+                  type="area"
+                  height={350}
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} md={6} lg={6}>
+                <ReactApexChart
+                  options={BarState.options}
+                  series={BarState.series}
+                  type="line"
+                  height={350}
+                />
+              </Grid>
+            </Grid>
+          </div>
+        </React.Fragment>
       </Container>
-      <React.Fragment>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
-            <h4 style={{ textAlign: "center" }}>Open Price</h4>
-            <ReactApexChart
-              options={openLine.options}
-              series={openLine.series}
-              type="area"
-              height={350}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
-            <h4 style={{ textAlign: "center" }}>Close Price</h4>
-            <ReactApexChart
-              options={closeLine.options}
-              series={closeLine.series}
-              type="area"
-              height={350}
-            />
-          </Grid>
-        </Grid>
-      </React.Fragment>
     </React.Fragment>
   );
 }

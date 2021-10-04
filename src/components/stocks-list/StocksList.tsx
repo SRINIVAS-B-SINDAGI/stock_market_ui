@@ -62,6 +62,7 @@ export default function StocksList() {
     history.push({
       pathname: `/detials/${row.nasdaq_symbol}.csv`,
     });
+    localStorage.setItem("company_name", JSON.stringify(row.security_name));
   };
   return (
     <React.Fragment>
