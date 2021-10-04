@@ -1,7 +1,7 @@
 import { Container, Grid } from "@mui/material";
 import React from "react";
-import EtfsList from "./etfs-list/EtfsList";
-import StocksList from "./stocks-list/StocksList";
+import EtfsList from "../etfs-list/EtfsList";
+import StocksList from "../stocks-list/StocksList";
 
 export default function Dashboard() {
   return (

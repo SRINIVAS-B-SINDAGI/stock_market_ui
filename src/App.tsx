@@ -1,10 +1,10 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import "./App.css";
-import Dashboard from "./components/dashboard";
+import Dashboard from "./components/dashboard/dashboard";
 import Details from "./components/details/details";
-import NavBar from "./components/NavBar";
-import UnAuthorized from "./components/UnAuthorized";
+import NavBar from "./components/navbar/NavBar";
+import UnAuthorized from "./components/unauthorized/UnAuthorized";
 export const serverUrl = process.env.REACT_APP_SERVER_URL;
 
 function App() {
