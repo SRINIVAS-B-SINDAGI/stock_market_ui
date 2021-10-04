@@ -30,11 +30,6 @@ function App() {
         />
         <ProtectedRoute path="/dashboard" exact component={Dashboard} />
       </Switch>
-      <React.Fragment>
-        {!isAuthenticated && (
-          <p style={{ textAlign: "center" }}>Login to the View Data</p>
-        )}
-      </React.Fragment>
     </div>
   );
 }

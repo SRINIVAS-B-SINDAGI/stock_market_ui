@@ -52,9 +52,11 @@ export default function Details(props: {
     if (user) {
       setToken();
     }
+    return () => {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
+  // Post request which is done should have been in service folder..
   const getStandardDeviation = (
     token: string | undefined,
     filename: string,
@@ -222,7 +224,7 @@ export default function Details(props: {
 
   const handleButtonClick = () => {
     history.push({
-      pathname: `/`,
+      pathname: `/dashboard`,
     });
   };
   return (

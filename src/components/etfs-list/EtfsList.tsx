@@ -9,12 +9,12 @@ import {
   TableBody,
   CircularProgress,
 } from "@mui/material";
-import axios from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
 import { useHistory } from "react-router-dom";
 import { ETF, EtfResponseData } from "../../interfaces/etfsListInterface";
+import { getJSON } from "../../services/service";
 
 const columns: readonly ETF[] = [
   { filename: "File Name", minWidth: 170 },
@@ -42,13 +42,8 @@ export default function EtfsList() {
   }, [user]);
 
   const getEtfsList = (token: string) => {
-    axios
-      .get(`${serverUrl}/api/etfs`, {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      })
-      .then(function (response) {
+    getJSON(`${serverUrl}/api/etfs`, token)
+      .then((response) => {
         setEtfsList(response.data);
         setLoadingData("loaded");
       })

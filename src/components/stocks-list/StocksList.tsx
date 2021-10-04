@@ -9,12 +9,12 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import axios from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { serverUrl } from "../../App";
 import { useHistory } from "react-router-dom";
 import { Stock, StockResponseData } from "../../interfaces/stocksListInterface";
+import { getJSON } from "../../services/service";
 
 const columns: readonly Stock[] = [
   { filename: "File Name", minWidth: 170 },
@@ -42,13 +42,8 @@ export default function StocksList() {
   }, [user]);
 
   const getStocksList = (token: string) => {
-    axios
-      .get(`${serverUrl}/api/stocks`, {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      })
-      .then(function (response) {
+    getJSON(`${serverUrl}/api/stocks`, token)
+      .then((response) => {
         setStocksList(response.data);
         setLoadingData("loaded");
       })
