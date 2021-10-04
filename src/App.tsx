@@ -1,30 +1,40 @@
+import { useHistory } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import ProtectedRoute from "./auth/protected-route";
+import { Switch } from "react-router-dom";
 import "./App.css";
 import Dashboard from "./components/dashboard/dashboard";
 import Details from "./components/details/details";
 import NavBar from "./components/navbar/NavBar";
-import UnAuthorized from "./components/unauthorized/UnAuthorized";
+import React from "react";
 export const serverUrl = process.env.REACT_APP_SERVER_URL;
 
 function App() {
   const { isAuthenticated } = useAuth0();
-
+  const history = useHistory();
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      history.push({
+        pathname: `/dashboard`,
+      });
+    }
+  });
   return (
     <div className="App">
       <NavBar />
-      {isAuthenticated ? (
-        <Switch>
-          <Route path="/detials/:filename/:type" exact component={Details} />
-          <Route path="/dashboard" exact component={Dashboard} />
-          <Route path="/" render={() => <Redirect to="/dashboard" />} />
-        </Switch>
-      ) : (
-        <Switch>
-          <Route path="/" exact component={UnAuthorized} />
-          <Route render={() => <Redirect to="/" />} />
-        </Switch>
-      )}
+      <Switch>
+        <ProtectedRoute
+          path="/detials/:filename/:type"
+          exact
+          component={Details}
+        />
+        <ProtectedRoute path="/dashboard" exact component={Dashboard} />
+      </Switch>
+      <React.Fragment>
+        {!isAuthenticated && (
+          <p style={{ textAlign: "center" }}>Login to the View Data</p>
+        )}
+      </React.Fragment>
     </div>
   );
 }
